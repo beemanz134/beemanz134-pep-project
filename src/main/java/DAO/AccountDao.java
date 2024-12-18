@@ -21,7 +21,7 @@ public class AccountDao {
 
             ResultSet rs = pstmt.getGeneratedKeys();
             if (rs.next()) {
-                account.setAccount_id(rs.getInt(1)); // Set the generated account_id
+                account.setAccount_id(rs.getInt(1));
             }
             return account;
         } catch (SQLException e) {
@@ -40,6 +40,28 @@ public class AccountDao {
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public Account login(Account loginAccount) {
+        String sql = "SELECT * From account WHERE username=? AND password=? ";
+        try(Connection conn = ConnectionUtil.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setString(1, loginAccount.username);
+            pstmt.setString(2, loginAccount.password);
+            ResultSet rs = pstmt.executeQuery();
+            if(rs.next()){
+                Account account = new Account();
+                account.setAccount_id(rs.getInt("account_id"));
+                account.setUsername(rs.getString("username"));
+                account.setPassword((rs.getString("password")));
+                return account;
+            } else {
+                return null;
+            }
+        } catch (SQLException e){
+            e.printStackTrace();
+            return null;
         }
     }
 }
