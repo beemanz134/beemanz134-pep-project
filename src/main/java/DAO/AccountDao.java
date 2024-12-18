@@ -10,6 +10,20 @@ import java.sql.SQLException;
 
 public class AccountDao {
 
+    public boolean getAccountById(int Id) {
+        String sql = "Select * FROM account Where account_id=?";
+        try (Connection conn = ConnectionUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, Id);
+            ResultSet rs = pstmt.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
     public Account createAccount(Account account) {
         String sql = "INSERT INTO account (username, password) VALUES (?, ?)";
 

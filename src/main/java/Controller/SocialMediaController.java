@@ -3,6 +3,7 @@ package Controller;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import Model.Account;
+import Model.Message;
 import Service.*;
 
 /**
@@ -13,13 +14,28 @@ import Service.*;
 public class SocialMediaController {
     private final UserRegisterService userRegisterService = new UserRegisterService();
     private final UserLoginService userLoginService = new UserLoginService();
+    private final CreateMessageService createMessageService = new CreateMessageService();
 
     public Javalin startAPI() {
         Javalin app = Javalin.create();
         app.post("/register", this::registerUser );
         app.post("/login", this::loginUser );
+        app.post("/messages", this::createMessage );
 
         return app;
+    }
+
+    //response status code + body
+    // 400 failure 200 success
+    private void createMessage(Context context) {
+        Message newMessage = context.bodyAsClass(Message.class);
+        Message createdMessage = createMessageService.newMessage(newMessage);
+        if (createdMessage != null) {
+            context.status(200).json(createdMessage); // Successful message
+        } else {
+            context.status(400); // message failed
+        }
+
     }
 
     //empty username/password
@@ -35,7 +51,7 @@ public class SocialMediaController {
         }
     }
 
-    //expected response is statuscode and response body
+    //expected response is status code 200 success 401 failure and response body
     private void loginUser (Context context) {
         Account loginAccount = context.bodyAsClass(Account.class);
         Account loggedinAccount = userLoginService.loginUser(loginAccount);
