@@ -32,4 +32,32 @@ public class MessageDao {
              return null;
         }
     }
+
+    public Message deleteMessage(int messageId) {
+        String sqlSelect = "SELECT * FROM message WHERE message_id = ?";
+        String sqlDelete = "DELETE FROM message WHERE message_id = ?";
+        Message messageToDelete = null;
+
+        try (Connection conn = ConnectionUtil.getConnection();
+             PreparedStatement pstmtSelect = conn.prepareStatement(sqlSelect);
+             PreparedStatement pstmtDelete = conn.prepareStatement(sqlDelete)) {
+
+            pstmtSelect.setInt(1, messageId);
+            ResultSet rs = pstmtSelect.executeQuery();
+            if (rs.next()) {
+                messageToDelete = new Message(
+                        rs.getInt("message_id"),
+                        rs.getInt("posted_by"),
+                        rs.getString("message_text"),
+                        rs.getLong("time_posted_epoch")
+                );
+            }
+            pstmtDelete.setInt(1, messageId);
+            pstmtDelete.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return messageToDelete; // should be message that is deleted or null
+    }
 }

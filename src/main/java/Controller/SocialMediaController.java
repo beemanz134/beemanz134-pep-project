@@ -21,8 +21,19 @@ public class SocialMediaController {
         app.post("/register", this::registerUser );
         app.post("/login", this::loginUser );
         app.post("/messages", this::createMessage );
+        app.delete("/messages/{messageId}", this::deleteMessage );
 
         return app;
+    }
+//    response status code 200 + body
+    private void deleteMessage(Context context) {
+        int messageId = Integer.parseInt(context.pathParam("messageId"));
+        Message deletedMessage = DeleteMessageService.deleteMessage(messageId);
+        if (deletedMessage != null) {
+            context.status(200).json(deletedMessage); // delete success
+        } else {
+            context.status(200);
+        }
     }
 
     //response status code + body
