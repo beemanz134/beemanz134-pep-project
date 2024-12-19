@@ -15,6 +15,7 @@ public class SocialMediaController {
     private final UserRegisterService userRegisterService = new UserRegisterService();
     private final UserLoginService userLoginService = new UserLoginService();
     private final CreateMessageService createMessageService = new CreateMessageService();
+    private final GetMessageForUSerService getMessageForUSerService = new GetMessageForUSerService();
 
     public Javalin startAPI() {
         Javalin app = Javalin.create();
@@ -22,9 +23,21 @@ public class SocialMediaController {
         app.post("/login", this::loginUser );
         app.post("/messages", this::createMessage );
         app.delete("/messages/{messageId}", this::deleteMessage );
+        app.get("/accounts/{accountId}/messages", this::getAllMessagesForUser );
 
         return app;
     }
+//    response 200 + body
+    private void getAllMessagesForUser(Context context) {
+        int accountId = Integer.parseInt(context.pathParam("accountId"));
+        Message [] messages = getMessageForUSerService.getAllMessagesForUser(accountId);
+        if(messages != null) {
+            context.status(200).json(messages);
+        } else {
+            context.status(200);
+        }
+    }
+
 //    response status code 200 + body
     private void deleteMessage(Context context) {
         int messageId = Integer.parseInt(context.pathParam("messageId"));
