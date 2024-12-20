@@ -12,6 +12,67 @@ import java.util.List;
 
 public class MessageDao {
 
+    public static Message updateMessage(int messageId, Message message) {
+        String sql = "UPDATE message SET message_text = ? WHERE message_id = ?";
+        try (Connection conn = ConnectionUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, message.message_text);
+            pstmt.setInt(2, messageId);
+            pstmt.executeUpdate();
+
+            return getMessageById(messageId);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static Message getMessageById(int messageId) {
+        String sql = "SELECT * FROM message WHERE message_id = ?";
+        Message message = null;
+
+        try (Connection conn = ConnectionUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, messageId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                message = new Message(
+                        rs.getInt("message_id"),
+                        rs.getInt("posted_by"),
+                        rs.getString("message_text"),
+                        rs.getLong("time_posted_epoch")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return message;
+    }
+
+    public static Message[] getAllMessages() {
+        String sql = "SELECT * FROM message";
+        List<Message> messagesList = new ArrayList<>();
+
+        try (Connection conn = ConnectionUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Message message = new Message(
+                            rs.getInt("message_id"),
+                            rs.getInt("posted_by"),
+                            rs.getString("message_text"),
+                            rs.getLong("time_posted_epoch")
+                    );
+                    messagesList.add(message);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new Message[0]; // Return an empty array on failure
+        }
+        return messagesList.toArray(new Message[0]);
+    }
+
     public static Message[] getAllMessagesForUser(int accountId) {
         String sql = "SELECT * FROM message WHERE posted_by = ?";
         List<Message> messagesList = new ArrayList<>();

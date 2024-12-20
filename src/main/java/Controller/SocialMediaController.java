@@ -16,6 +16,10 @@ public class SocialMediaController {
     private final UserLoginService userLoginService = new UserLoginService();
     private final CreateMessageService createMessageService = new CreateMessageService();
     private final GetMessageForUSerService getMessageForUSerService = new GetMessageForUSerService();
+    private final GetAllMessageService getAllMessageService = new GetAllMessageService();
+    private final GetMessageByIdService getMessageByIdService = new GetMessageByIdService();
+    private final UpdateMessageService updateMessageService = new UpdateMessageService();
+
 
     public Javalin startAPI() {
         Javalin app = Javalin.create();
@@ -24,8 +28,45 @@ public class SocialMediaController {
         app.post("/messages", this::createMessage );
         app.delete("/messages/{messageId}", this::deleteMessage );
         app.get("/accounts/{accountId}/messages", this::getAllMessagesForUser );
-
+        app.get("/messages", this::getAllMessages );
+        app.get("/messages/{messageId}", this::getMessageById );
+        app.patch("/messages/{messageId}", this::updateMessage );
         return app;
+    }
+
+//    200 + body
+//    400 + body
+    private void updateMessage(Context context) {
+        int messageId = Integer.parseInt(context.pathParam("messageId"));
+        Message message = context.bodyAsClass(Message.class);
+        Message updatedMessage = updateMessageService.updateMessage(messageId, message);
+        if(updatedMessage != null) {
+            context.status(200).json(updatedMessage);
+        } else {
+            context.status(400);
+        }
+    }
+
+//    response 200 + body
+//    else response 100 + body
+    private void getMessageById(Context context) {
+        int messageId = Integer.parseInt(context.pathParam("messageId"));
+        Message message = getMessageByIdService.getMessageById(messageId);
+        if(message != null) {
+            context.status(200).json(message);
+        } else {
+            context.status(200);
+        }
+    }
+
+//    response 200 + list else 200 and empty list
+    private void getAllMessages(Context context) {
+        Message [] allMessages = getAllMessageService.getAllMessages();
+        if(allMessages != null) {
+            context.status(200).json(allMessages);
+        } else {
+            context.status(200);
+        }
     }
 //    response 200 + body
     private void getAllMessagesForUser(Context context) {
